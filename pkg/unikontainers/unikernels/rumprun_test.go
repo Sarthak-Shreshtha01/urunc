@@ -38,3 +38,26 @@ func TestRumprunCommandStringNoHTMLEscape(t *testing.T) {
 		`"blk":{"source":"etfs","path":"/dev/ld0a","fstype":"blk","mountpoint":"/data&<>"}}`
 	assert.Equal(t, want, got)
 }
+
+func TestRumprunCommandStringNetAndEnvsNoHTMLEscape(t *testing.T) {
+	r := &Rumprun{
+		Command: "app",
+		Envs:    []string{"FOO=a&b", "BAR=<c>"},
+		Net: RumprunNet{
+			Interface: "ukvmif0&",
+			Cloner:    "True",
+			Type:      "inet",
+			Method:    "static",
+			Address:   "10.0.0.2",
+			Mask:      "24",
+			Gateway:   "10.0.0.1<>",
+		},
+	}
+
+	got, err := r.CommandString()
+	assert.NoError(t, err)
+	want := `{"cmdline":"app","env":"FOO=a&b","env":"BAR=<c>",` +
+		`"net":{"if":"ukvmif0&","cloner":"True","type":"inet","method":"static",` +
+		`"addr":"10.0.0.2","mask":"24","gw":"10.0.0.1<>"}}`
+	assert.Equal(t, want, got)
+}
